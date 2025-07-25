@@ -927,17 +927,22 @@ class DocumentIntelligenceSystem:
         
         return result
     
+
 def convert_numpy_types(obj):
+    """Convert numpy types to native Python types for JSON serialization."""
+    import numpy as np
     if isinstance(obj, dict):
         return {k: convert_numpy_types(v) for k, v in obj.items()}
     elif isinstance(obj, list):
         return [convert_numpy_types(i) for i in obj]
-    elif isinstance(obj, np.generic):
-        return obj.item()
+    elif isinstance(obj, (np.integer, np.int32, np.int64)):
+        return int(obj)
+    elif isinstance(obj, (np.floating, np.float32, np.float64)):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
     else:
         return obj
-
-
 
 def main():
     """Main execution function."""
@@ -947,68 +952,68 @@ def main():
     if len(sys.argv) == 2:
         # New JSON input format
         input_file = sys.argv[1]
-        
-        # Determine PDF directory (assume same directory as input file or 'input' subdirectory)
+
+        # Determine PDF directory (assume same directory as input file or 'pdfs' subdirectory)
         input_dir = os.path.dirname(input_file) if os.path.dirname(input_file) else '.'
         pdf_directory = os.path.join(input_dir, 'pdfs') if os.path.exists(os.path.join(input_dir, 'pdfs')) else input_dir
-        
+
         # Initialize and run the system
         system = DocumentIntelligenceSystem()
         result = system.process_challenge(input_file, pdf_directory)
-        
+
         # Generate output filename based on challenge info
         challenge_id = result['metadata'].get('challenge_id', 'challenge')
         test_case = result['metadata'].get('test_case_name', 'output')
-        output_file = f"{challenge_id}_{test_case}_output.json"
-        
+        output_file = os.path.join(input_dir, f"{challenge_id}_{test_case}_output.json")
+
     elif len(sys.argv) == 3:
         # JSON input with explicit PDF directory
         input_file = sys.argv[1]
         pdf_directory = sys.argv[2]
-        
+        input_dir = os.path.dirname(input_file) if os.path.dirname(input_file) else '.'
+
         system = DocumentIntelligenceSystem()
         result = system.process_challenge(input_file, pdf_directory)
-        
+
         challenge_id = result['metadata'].get('challenge_id', 'challenge')
         test_case = result['metadata'].get('test_case_name', 'output')
-        output_file = f"{challenge_id}_{test_case}_output.json"
-        
+        output_file = os.path.join(input_dir, f"{challenge_id}_{test_case}_output.json")
+
     elif len(sys.argv) == 4:
         # Legacy format: python main.py <pdf_directory> <persona_file> <job_file>
         pdf_directory = sys.argv[1]
         persona_file = sys.argv[2]
         job_file = sys.argv[3]
-        
+
         # Read persona and job descriptions
         with open(persona_file, 'r') as f:
             persona_description = f.read().strip()
-        
+
         with open(job_file, 'r') as f:
             job_description = f.read().strip()
-        
+
         # Get all PDF files
         pdf_paths = [os.path.join(pdf_directory, f) for f in os.listdir(pdf_directory) if f.endswith('.pdf')]
-        
+
         if not pdf_paths:
             print("No PDF files found in the specified directory")
             sys.exit(1)
-        
+
         # Initialize and run the system
         system = DocumentIntelligenceSystem()
         result = system.process_documents(pdf_paths, persona_description, job_description)
-        output_file = 'challenge1b_output.json'
-        
+        output_file = os.path.join(pdf_directory, 'challenge1b_output.json')
+
     else:
         print("Usage:")
         print("  New format: python main.py <challenge_input.json> [pdf_directory]")
         print("  Legacy format: python main.py <pdf_directory> <persona_file> <job_file>")
         sys.exit(1)
-    
+
     # Save output
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(convert_numpy_types(result), f, indent=2, ensure_ascii=False)
 
-    
     print(f"Processing complete. Output saved to {output_file}")
     print(f"Challenge: {result['metadata'].get('challenge_id', 'N/A')}")
     print(f"Test case: {result['metadata'].get('test_case_name', 'N/A')}")
@@ -1016,5 +1021,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
