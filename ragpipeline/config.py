@@ -1,0 +1,148 @@
+"""
+Configuration settings for the document intelligence system.
+"""
+
+import os
+
+class Config:
+    """System configuration class."""
+    
+    # Model settings
+    SENTENCE_MODEL_NAME = "all-MiniLM-L6-v2"
+    MODEL_CACHE_DIR = "/app/models"
+    MAX_MODEL_SIZE_MB = 500
+    
+    # Processing limits
+    MAX_DOCUMENTS = 10
+    MAX_FILE_SIZE_MB = 50
+    PROCESSING_TIMEOUT_SECONDS = 60
+    MAX_SECTIONS_PER_DOC = 10
+    MAX_TOTAL_SUBSECTIONS = 15
+    
+    # Content thresholds
+    MIN_SECTION_LENGTH = 50
+    MIN_SUBSECTION_LENGTH = 100
+    MAX_CONTENT_PREVIEW_LENGTH = 200
+    MAX_REFINED_TEXT_WORDS = 300
+    
+    # Scoring weights
+    KEYWORD_MATCH_WEIGHT = 0.3
+    SEMANTIC_SIMILARITY_WEIGHT = 0.4
+    CONTENT_QUALITY_WEIGHT = 0.2
+    STRUCTURE_WEIGHT = 0.1
+    
+    # Relevance thresholds
+    MIN_SECTION_RELEVANCE = 20
+    MIN_SUBSECTION_RELEVANCE = 30
+    
+    # Text processing
+    MAX_KEYWORDS_EXTRACTED = 20
+    TFIDF_MAX_FEATURES = 1000
+    NGRAM_RANGE = (1, 2)
+    
+    # Output settings
+    OUTPUT_PRECISION = 2  # Decimal places for scores
+    INCLUDE_DEBUG_INFO = False
+    
+    # Logging
+    LOG_LEVEL = "INFO"
+    LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    
+    @classmethod
+    def get_env_config(cls):
+        """Get configuration from environment variables."""
+        return {
+            'processing_timeout': int(os.getenv('PROCESSING_TIMEOUT', cls.PROCESSING_TIMEOUT_SECONDS)),
+            'max_documents': int(os.getenv('MAX_DOCUMENTS', cls.MAX_DOCUMENTS)),
+            'max_file_size_mb': int(os.getenv('MAX_FILE_SIZE_MB', cls.MAX_FILE_SIZE_MB)),
+            'min_section_relevance': float(os.getenv('MIN_SECTION_RELEVANCE', cls.MIN_SECTION_RELEVANCE)),
+            'debug_mode': os.getenv('DEBUG_MODE', 'false').lower() == 'true'
+        }
+
+# Domain-specific keyword mappings
+DOMAIN_KEYWORDS = {
+    'academic': [
+        'research', 'study', 'analysis', 'methodology', 'results',
+        'literature', 'hypothesis', 'experiment', 'data', 'findings',
+        'publication', 'peer-review', 'statistical', 'significant',
+        'correlation', 'validation', 'benchmark', 'baseline'
+    ],
+    'business': [
+        'revenue', 'profit', 'market', 'strategy', 'competitive',
+        'customer', 'growth', 'investment', 'roi', 'kpi',
+        'business', 'commercial', 'financial', 'performance',
+        'sales', 'marketing', 'operations', 'management'
+    ],
+    'technical': [
+        'system', 'algorithm', 'implementation', 'architecture',
+        'software', 'hardware', 'network', 'database',
+        'performance', 'optimization', 'scalability', 'security',
+        'api', 'framework', 'protocol', 'interface'
+    ],
+    'medical': [
+        'patient', 'clinical', 'treatment', 'diagnosis', 'therapy',
+        'medical', 'health', 'disease', 'symptom', 'drug',
+        'trial', 'efficacy', 'safety', 'dosage', 'adverse'
+    ],
+    'financial': [
+        'financial', 'accounting', 'budget', 'cost', 'expense',
+        'income', 'cash', 'flow', 'balance', 'sheet',
+        'assets', 'liabilities', 'equity', 'investment', 'return'
+    ]
+}
+
+# Section type patterns for classification
+SECTION_PATTERNS = {
+    'abstract': [
+        r'\babstract\b', r'\bsummary\b', r'\boverview\b',
+        r'\bexecutive summary\b'
+    ],
+    'introduction': [
+        r'\bintroduction\b', r'\bbackground\b', r'\bmotivation\b',
+        r'\bobjective\b', r'\bpurpose\b'
+    ],
+    'methodology': [
+        r'\bmethodology\b', r'\bmethod\b', r'\bapproach\b',
+        r'\btechnique\b', r'\bprocedure\b', r'\bexperimental\b'
+    ],
+    'results': [
+        r'\bresults?\b', r'\bfindings?\b', r'\boutcome\b',
+        r'\bdata\b', r'\bobservation\b'
+    ],
+    'discussion': [
+        r'\bdiscussion\b', r'\banalysis\b', r'\binterpretation\b',
+        r'\bimplication\b'
+    ],
+    'conclusion': [
+        r'\bconclusion\b', r'\bsummary\b', r'\bfuture work\b',
+        r'\brecommendation\b'
+    ],
+    'financial': [
+        r'\bfinancial\b', r'\brevenue\b', r'\bprofit\b',
+        r'\bearnings\b', r'\bincome statement\b', r'\bbalance sheet\b'
+    ]
+}
+
+# Persona-specific preferences
+PERSONA_PREFERENCES = {
+    'researcher': {
+        'preferred_sections': ['methodology', 'results', 'discussion'],
+        'keyword_boost': DOMAIN_KEYWORDS['academic'],
+        'min_content_complexity': 0.6
+    },
+    'student': {
+        'preferred_sections': ['introduction', 'abstract', 'conclusion'],
+        'keyword_boost': ['concept', 'definition', 'example', 'explanation'],
+        'min_content_complexity': 0.3
+    },
+    'analyst': {
+        'preferred_sections': ['results', 'financial', 'discussion'],
+        'keyword_boost': DOMAIN_KEYWORDS['business'] + DOMAIN_KEYWORDS['financial'],
+        'min_content_complexity': 0.5
+    },
+    'manager': {
+        'preferred_sections': ['abstract', 'conclusion', 'financial'],
+        'keyword_boost': ['summary', 'recommendation', 'decision', 'strategy'],
+        'min_content_complexity': 0.4
+    }
+}
