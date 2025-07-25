@@ -12,7 +12,6 @@ def run_outline_extractor(pdf_path: Path, output_path: Path):
     lines = extract_text_with_fonts(str(pdf_path))
     title, outline = identify_title_and_headings(lines)
 
-    # Fallback if headings not found
     if not outline:
         outline = extract_bookmarks(str(pdf_path))
 
