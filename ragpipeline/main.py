@@ -256,10 +256,8 @@ class DocumentIntelligenceSystem:
             if any(keyword in sentence_lower for keyword in keywords):
                 relevant_sentences.append(sentence)
             elif len(sentence) > 100 and len(relevant_sentences) < 3:
-                # Include longer descriptive sentences if we don't have many keyword matches
                 relevant_sentences.append(sentence)
         
-        # Return refined text (max 300 words)
         result = ' '.join(relevant_sentences)
         words = result.split()
         if len(words) > 300:
