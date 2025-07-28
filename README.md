@@ -77,13 +77,6 @@ Each contains:
 * An input JSON (`challenge1b_input.json`)
 * A set of PDFs for reference
 * An output JSON (`challenge1b_output.json`)
-
----
-
-## 📜 License
-
-MIT License (if applicable)
-
 ---
 
 ## 🤝 Contributing
